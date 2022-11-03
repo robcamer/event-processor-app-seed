@@ -1,0 +1,57 @@
+#!/bin/bash
+
+HAS_ERRORS=false;
+CURRENT_DIR=$(dirname "${BASH_SOURCE[0]}")
+readonly CURRENT_DIR
+
+main() {
+  if [[ "$1" == "-p" || "$1" == "--pipeline" ]]; then
+    echo "***RUNNING IN PIPELINE***"
+    run_in_pipeline
+  else
+    echo "***RUNNING PRE-COMMIT HOOK***"
+    run_locally
+  fi;
+
+
+  if [[ true = "$HAS_ERRORS" ]]; then
+    printf "\e[31;1m%s\e[0m\n\e" "!**Checks Failed**! Please fix errors and try again!"
+    exit 1;
+  else
+    exit 0;
+  fi
+}
+
+run_in_pipeline() {
+  bash "$CURRENT_DIR/scripts/check_markdown.sh"   || HAS_ERRORS=true
+  bash "$CURRENT_DIR/scripts/check_secrets.sh"    || HAS_ERRORS=true
+  bash "$CURRENT_DIR/scripts/check_file_size.sh"  || HAS_ERRORS=true
+  bash "$CURRENT_DIR/scripts/run_dotnet_tests.sh" || HAS_ERRORS=true
+}
+
+run_locally() {
+  local -r src_code_dir_name="ntwkobsv"
+  local git_diff_files;
+
+  git_diff_files=$(git diff --cached --name-only)
+
+  if [[ -z $git_diff_files ]]; then
+    echo "No files added to be commited!"
+    exit 1
+  else
+	bash "$CURRENT_DIR/scripts/format_files.sh" --files="$git_diff_files"
+  fi
+
+  printf "\nFiles added, modified, or deleted to be commited:\n%s\n\n" "$git_diff_files"
+
+  files=$(echo "$git_diff_files" | tr "\n" ",")
+  bash "$CURRENT_DIR/scripts/check_markdown.sh"  --files="$files" || HAS_ERRORS=true
+  bash "$CURRENT_DIR/scripts/check_secrets.sh"   --files="$files" || HAS_ERRORS=true
+  bash "$CURRENT_DIR/scripts/check_file_size.sh" --files="$files" || HAS_ERRORS=true
+
+  if (git diff --cached --name-only |  grep -q "$src_code_dir_name"); then
+    bash "$CURRENT_DIR/scripts/run_dotnet_tests.sh" -c  || HAS_ERRORS=true
+  fi;
+}
+
+main "${@}"
