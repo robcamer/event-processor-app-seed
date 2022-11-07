@@ -1,0 +1,10 @@
+# For more details on app.yaml, see: https://aka.ms/coral/appyaml
+
+template: external-service
+deployments:
+  development:
+    target: development
+    clusters: 1
+    values:
+      image: myregistry.io/myimage:tag
+      port: 5000

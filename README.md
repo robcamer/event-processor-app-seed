@@ -5,14 +5,11 @@ This is the overview list of steps when creating an app seed. All places that re
 1. Use this repo as a template in the new seed repo creation
 2. In project root directory, run `grep -nr "TODO" ./` to preview all files that require action
 3. Update projects to use the specific project info instead of placeholder, general items are
-   1. Add application files under `/App` and `/test/App.Test`
-   2. Update required secrets under `.env.example`
-   3. Update docs such as README, SUPPORT with service specific info
-   4. Update pipeline files `.gitlab-ci.yml` and `/github/github.action.yml` to build, test, and push on both platforms
+   1. Update pipeline files `.gitlab-ci.yml` and `/github/github.action.yml` to build, test, and push on both platforms
 4. Run step 2 again to ensure no more updates are left
 5. Remove this top section when done
 
-# TODO PROJECT_NAME App Seed
+# EventProcessor App Seed
 
 This is an application seed that is part of the general Network Observability solution consisting of containerized .NET application development with cloud-native capabilities.
 
@@ -26,20 +23,31 @@ To get started with Coral, see the [platform setup instructions](https://github.
 
 ## Baseline Features
 
-The application seed contains (or will contain) the following cloud-native capabilities:
+The application seed contains the following cloud-native capabilities:
 
-1. Structured logging
 1. Performance metrics
-1. Distributed tracing
-1. Feature flags
-1. Data storage
-1. Inner loop using codespaces
-1. Init container
-1. Metadata for observability
+2. Data storage
+3. Metadata for observability
 
 ## Network Observability Features
 
-Add details regarding this project as it relates to the overall Network Observability capability.
+EventProcessor will process an event metadata json and store it in the Database for Observability dashboards
+
+Input:
+
+an event json, sample can be found in [eventsample.json](eventsample.json)
+
+Output:
+
+![Saved event](docs/db.png)
+
+### Application Development
+
+After secret file `.env` has been configured, load it with `export 'cat .env' && bash`
+
+- In src/App, run `dotnet build` to build your app
+- In src/App, run `dotnet run` to run your app
+- In test/App.Test, run `dotnet test` to run unit tests
 
 ### Container Development
 

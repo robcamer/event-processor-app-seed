@@ -1,0 +1,11 @@
+{
+	"EventDays": [
+		{
+			"JulianDay": "60",
+			"Ready": "true",
+			"ReProcess": "false",
+			"IntervalInSeconds": "300"
+		}
+	]
+}
+
