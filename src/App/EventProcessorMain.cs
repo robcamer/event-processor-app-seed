@@ -1,7 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using EFR.NetworkObservability.Common;
-using EFR.NetworkObservability.Common.Enums;
 using EFR.NetworkObservability.Common.FileWatcher;
 using EFR.NetworkObservability.DataModel.Contexts;
 using MassTransit;
@@ -33,7 +32,7 @@ public class EventProcessorMain
 					string rabbitMQPassword = Utils.GetEnvVar(Constants.RABBITMQ_PASSWORD);
 
 					services.AddDbContextFactory<PcapContext>(options => options.UseSqlServer(dbConnectionString));
-					services.AddSingleton(_ => new PollingFileWatcher(eventMetaDataDir, FileFilter.Json));
+					services.AddSingleton(_ => new PollingFileWatcher(eventMetaDataDir, "*.*"));
 					services.AddSingleton<EventProcessor>();
 					services.AddHostedService<EventProcessorService>();
 

@@ -93,7 +93,7 @@ public class EventProcessor
 	/// <param name="filePath">Directory to monitor</param>
 	public void OnFileCreated(string filePath)
 	{
-		if (Utils.FileIsValid(filePath, ext: Common.Enums.FileFilter.Json))
+		if (Utils.FileAvailable(filePath))
 		{
 			Process(filePath);
 		}

@@ -7,11 +7,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using EFR.NetworkObservability.Common;
-using EFR.NetworkObservability.Common.Enums;
 using EFR.NetworkObservability.Common.FileWatcher;
 using EFR.NetworkObservability.DataModel.Contexts;
 using EFR.NetworkObservability.RabbitMQ;
-// using EFR.NetworkObservability.Test;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -57,7 +55,7 @@ public class TestEventProcessor : IDisposable
 		mockLogger = new Mock<ILogger<EventProcessor>>();
 		mockBus = new Mock<IBus>();
 		mockEndpoint = new Mock<ISendEndpoint>();
-		mockFileWatcher = new Mock<PollingFileWatcher>(eventDataDir, FileFilter.Json);
+		mockFileWatcher = new Mock<PollingFileWatcher>(eventDataDir, "*.*");
 		mockDbFactory = new Mock<IDbContextFactory<PcapContext>>();
 		context = new PcapContext(options);
 

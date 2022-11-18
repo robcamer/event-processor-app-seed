@@ -1,14 +1,3 @@
-# TODO - Seed Creation Steps
-
-This is the overview list of steps when creating an app seed. All places that require modification has been marked with `TODO`. Here are the steps:
-
-1. Use this repo as a template in the new seed repo creation
-2. In project root directory, run `grep -nr "TODO" ./` to preview all files that require action
-3. Update projects to use the specific project info instead of placeholder, general items are
-   1. Update pipeline files `.gitlab-ci.yml` and `/github/github.action.yml` to build, test, and push on both platforms
-4. Run step 2 again to ensure no more updates are left
-5. Remove this top section when done
-
 # EventProcessor App Seed
 
 This is an application seed that is part of the general Network Observability solution consisting of containerized .NET application development with cloud-native capabilities.
@@ -49,6 +38,50 @@ After secret file `.env` has been configured, load it with `export 'cat .env' &&
 - In src/App, run `dotnet run` to run your app
 - In test/App.Test, run `dotnet test` to run unit tests
 
+### Workflow Piplines For GitHub
+
+Docker file is created under root /Dockerfile which does a build and push to the configured registry container.
+For a sucessfull pipeline run, Once the dotnet repo is created add the below CI-CD pipeline variables for the Repository
+
+```bash
+CONTAINER_REGISTRY_URL : conatiner-registry-url
+CONTAINER_REGISTRY_ACCESS_TOKEN : conatiner-registry-accesstoken
+CONTAINER_REGISTRY_USER : conatiner-registry-user
+PACKAGE_REGISTRY_USERNAME : Github-package-registry-user-where-commonisstored
+PACKAGE_REGISTRY_PASSWORD: Github-package-registry-password
+PACKAGE_REGISTRY_ORG_NAME: organization-name-for-the-package-registry
+```
+
+### Workflow Piplines For GitLab
+
+- Create the necessary Common library packages using repo <https://code.afcmade.com/devteam/cse/cse-efr-coral/templates/NetworkObservabilityUtilities>
+- Create a GitLab Pipline Runner for the group if not already available. Refer to the steps to create a runner with the `efr` tag [here](https://dev.azure.com/CSECodeHub/CSE%20Gov%20-%20Mission%20Capabilities/_wiki/wikis/513266---EFR---Azure-Mission-Edge-Application-Platform.wiki/31862/GitLab-Runner-for-use-with-Coral-GitLab-pipelines)
+- Clone the App seed repo into GitLab
+- Create the below CICD variables
+
+```bash
+CONTAINER_REGISTRY_URL : conatiner-registry-url
+CONTAINER_REGISTRY_ACCESS_TOKEN : conatiner-registry-accesstoken
+CONTAINER_REGISTRY_USER : conatiner-registry-user
+```
+
+- Update the nuget.config files with the gitlab specific common library path , similar to below
+
+```bash
+<add key="gitlab" value="https://gitlab.com/api/v4/projects/---/index.json" />
+<gitlab>
+  <add key="Username" value="%GITLAB_PACKAGE_REGISTRY_USERNAME%" />
+  <add key="ClearTextPassword" value="%GITLAB_PACKAGE_REGISTRY_PASSWORD%" />
+</gitlab>
+```
+
+- Update the docker file to use these ARG variables
+
+``` bash
+ARG GITLAB_PACKAGE_REGISTRY_USERNAME
+ARG GITLAB_PACKAGE_REGISTRY_PASSWORD
+```
+
 ### Container Development
 
 Your Codespace has a preconfigured running cluster so that you can validate how your application will behave when deployed
@@ -86,7 +119,7 @@ These values can be obtained from your specific container registry provider.
 
 This project welcomes contributions and suggestions.  Most contributions require you to agree to a
 Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
-the rights to use your contribution. For details, visit https://cla.opensource.microsoft.com.
+the rights to use your contribution. For details, visit <https://cla.opensource.microsoft.com>.
 
 When you submit a pull request, a CLA bot will automatically determine whether you need to provide
 a CLA and decorate the PR appropriately (e.g., status check, comment). Simply follow the instructions

@@ -1,0 +1,74 @@
+name: .NET Core Container
+
+on: [push, pull_request]
+
+env:
+  CONTAINER_REGISTRY_URL: ${{ secrets.CONTAINER_REGISTRY_URL }}
+  CONTAINER_REGISTRY_USER: ${{ secrets.CONTAINER_REGISTRY_USER }}
+  CONTAINER_REGISTRY_ACCESS_TOKEN: ${{ secrets.CONTAINER_REGISTRY_ACCESS_TOKEN }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  CONTAINER_IMAGE_NAME: ${{ github.repository }}
+  GITHUB_PACKAGE_REGISTRY_USERNAME:  ${{ secrets.PACKAGE_REGISTRY_USERNAME }}
+  GITHUB_PACKAGE_REGISTRY_PASSWORD:  ${{ secrets.PACKAGE_REGISTRY_PASSWORD }}
+  GITHUB_PACKAGE_REGISTRY_ORG_NAME:  ${{ secrets.PACKAGE_REGISTRY_ORG_NAME }}
+
+jobs:
+  docker-build-and-push:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - uses: actions/checkout@v2
+
+    - name: Use Github Container Registry if no secrets are set
+      if: ${{ env.CONTAINER_REGISTRY_URL == '' }}
+      run: echo "CONTAINER_REGISTRY_URL=ghcr.io" >> $GITHUB_ENV && echo "CONTAINER_REGISTRY_ACCESS_TOKEN=$GITHUB_TOKEN" >> $GITHUB_ENV && echo "CONTAINER_REGISTRY_USER=\$GITHUB_USER" >> $GITHUB_ENV
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.0.x
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build --no-restore --configuration Debug
+
+    - name: Test
+      run: dotnet test --no-build --verbosity normal --configuration Debug
+
+    - name: Login to Container Registry
+      uses: docker/login-action@v1
+      with:
+        registry: ${{ env.CONTAINER_REGISTRY_URL }}
+        username: ${{ env.CONTAINER_REGISTRY_USER }}
+        password: ${{ env.CONTAINER_REGISTRY_ACCESS_TOKEN }}
+
+    - name: Docker metadata
+      id: meta
+      uses: docker/metadata-action@v3
+      with:
+        images: ${{ env.CONTAINER_REGISTRY_URL }}/${{ env.CONTAINER_IMAGE_NAME }}
+        tags: |
+          type=schedule
+          type=ref,event=branch
+          type=ref,event=pr
+          type=semver,pattern={{version}}
+    - name: Echo Variables
+      run: |
+        echo $GITHUB_PACKAGE_REGISTRY_USERNAME
+        echo $GITHUB_PACKAGE_REGISTRY_PASSWORD
+        echo $GITHUB_PACKAGE_REGISTRY_ORG_NAME
+    - name: Build and push
+      uses: docker/build-push-action@v2
+      with:
+        context: .
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        build-args: |
+          GITHUB_PACKAGE_REGISTRY_USERNAME=${{ env.GITHUB_PACKAGE_REGISTRY_USERNAME }}
+          GITHUB_PACKAGE_REGISTRY_PASSWORD=${{ env.GITHUB_PACKAGE_REGISTRY_PASSWORD }}
+          GITHUB_PACKAGE_REGISTRY_ORG_NAME=${{ env.GITHUB_PACKAGE_REGISTRY_ORG_NAME }}
