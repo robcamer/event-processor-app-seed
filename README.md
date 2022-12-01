@@ -38,6 +38,35 @@ After secret file `.env` has been configured, load it with `export 'cat .env' &&
 - In src/App, run `dotnet run` to run your app
 - In test/App.Test, run `dotnet test` to run unit tests
 
+## Environment Configuration
+
+The following variables are required to allow  successful pipeline and local builds.
+
+### In local `.env` file
+
+NAME | REQUIRED (Y/N) | PURPOSE / EXAMPLE VALUES
+--- | --- | ---
+GITHUB_PACKAGE_REGISTRY_USERNAME | Y | username to authenticate to github / `username`. This token can be obtained by going to `Profile` -> `Settings` -> `Developer Settings` -> `Personal Access Tokens(PAT)`. It must contain at least `repo`, `workflow`, and `write:packages` permissions.
+GITHUB_PACKAGE_REGISTRY_PASSWORD | Y | password to authenticate to github / `Dxxxxxxxxxxxxx`. This token can be obtained by going to `Profile` -> `Settings` -> `Developer Settings` -> `Personal Access Tokens(PAT)`. It must contain at least `repo`, `workflow`, and `write:packages` permissions.
+NUGET_PLATFORM_URL | Y | platform URL to allow required common package imports / `https://nuget.pkg.github.com/<your-org-name>/index.json`
+NUGET_SOURCE_URL | Y | nuget source URL to allow required nuget owned package imports / `https://api.nuget.org/v3/index.json`
+
+See [.env.example](.env.example) for more info
+
+### In repository's CI/CD setting variables
+
+Repo action secrets can be modified at `Repo` -> `Settings` -> `Secrets` -> `Actions` -> `New repository secret`
+
+NAME | REQUIRED (Y/N) | PURPOSE / EXAMPLE VALUES
+--- | --- | ---
+CONTAINER_REGISTRY_URL | Y | endpoint for container registry for pipeline to push image to / `xxxx.azurecr.com`
+CONTAINER_REGISTRY_USER | Y | username to authenticate to the destination container registry / `registry_user`
+CONTAINER_REGISTRY_ACCESS_TOKEN | Y | password to authenticate to the destination container registry / `xxxxxxxxxxxxxxxxxxxx`
+PACKAGE_REGISTRY_USERNAME | Y | username to authenticate to github / `username`. This token can be obtained by going to `Profile` -> `Settings` -> `Developer Settings` -> `Personal Access Tokens(PAT)`. It must contain at least `repo`, `workflow`, and `write:packages` permissions.
+PACKAGE_REGISTRY_PASSWORD | Y | password to authenticate to github / `ghp_xxxxxxxxxxxxx`. This token can be obtained by going to `Profile` -> `Settings` -> `Developer Settings` -> `Personal Access Tokens(PAT)`. It must contain at least `repo`, `workflow`, and `write:packages` permissions.
+NUGET_PLATFORM_URL | Y | platform URL to allow required common package imports / `https://<your_repo_domain>/api/v4/projects/<common_package_group_id>/nuget/index.json`
+NUGET_SOURCE_URL | Y | nuget source URL to allow required nuget owned package imports / `https://api.nuget.org/v3/index.json`
+
 ### Workflow Piplines For GitHub
 
 Docker file is created under root /Dockerfile which does a build and push to the configured registry container.
