@@ -10,7 +10,8 @@ env:
   CONTAINER_IMAGE_NAME: ${{ github.repository }}
   GITHUB_PACKAGE_REGISTRY_USERNAME:  ${{ secrets.PACKAGE_REGISTRY_USERNAME }}
   GITHUB_PACKAGE_REGISTRY_PASSWORD:  ${{ secrets.PACKAGE_REGISTRY_PASSWORD }}
-  GITHUB_PACKAGE_REGISTRY_ORG_NAME:  ${{ secrets.PACKAGE_REGISTRY_ORG_NAME }}
+  NUGET_PLATFORM_URL: ${{ secrets.NUGET_PLATFORM_URL }}
+  NUGET_SOURCE_URL: ${{ secrets.NUGET_SOURCE_URL }}
 
 jobs:
   docker-build-and-push:
@@ -60,7 +61,8 @@ jobs:
       run: |
         echo $GITHUB_PACKAGE_REGISTRY_USERNAME
         echo $GITHUB_PACKAGE_REGISTRY_PASSWORD
-        echo $GITHUB_PACKAGE_REGISTRY_ORG_NAME
+        echo $NUGET_PLATFORM_URL
+        echo $NUGET_SOURCE_URL
     - name: Build and push
       uses: docker/build-push-action@v2
       with:
@@ -71,4 +73,5 @@ jobs:
         build-args: |
           GITHUB_PACKAGE_REGISTRY_USERNAME=${{ env.GITHUB_PACKAGE_REGISTRY_USERNAME }}
           GITHUB_PACKAGE_REGISTRY_PASSWORD=${{ env.GITHUB_PACKAGE_REGISTRY_PASSWORD }}
-          GITHUB_PACKAGE_REGISTRY_ORG_NAME=${{ env.GITHUB_PACKAGE_REGISTRY_ORG_NAME }}
+          NUGET_PLATFORM_URL: ${{ secrets.NUGET_PLATFORM_URL }}
+          NUGET_SOURCE_URL: ${{ secrets.NUGET_SOURCE_URL }}
