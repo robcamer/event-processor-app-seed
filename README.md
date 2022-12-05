@@ -40,7 +40,10 @@ After secret file `.env` has been configured, load it with `export 'cat .env' &&
 
 ## Environment Configuration
 
-The following variables are required to allow  successful pipeline and local builds.
+The following variables are required to allow  successful pipeline and local builds. Select a platform to view.
+
+<details>
+  <summary>GitHub Variables</summary>
 
 ### In local `.env` file
 
@@ -67,6 +70,50 @@ PACKAGE_REGISTRY_PASSWORD | Y | password to authenticate to github / `ghp_xxxxxx
 NUGET_PLATFORM_URL | Y | platform URL to allow required common package imports / `https://<your_repo_domain>/api/v4/projects/<common_package_group_id>/nuget/index.json`
 NUGET_SOURCE_URL | Y | nuget source URL to allow required nuget owned package imports / `https://api.nuget.org/v3/index.json`
 
+</details>
+
+<details>
+  <summary>Gitlab variables</summary>
+In repo's `nuget.config` file, update the file to point to use gitlab variables, such as
+
+```bash
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <packageSources>
+     <clear />
+	 <add key="nuget" value="%NUGET_SOURCE_URL%" />
+	 <add key="gitlab" value="%NUGET_PLATFORM_URL%" />
+  </packageSources>
+  <packageSourceCredentials>
+     <gitlab>
+         <add key="Username" value="%GITLAB_PACKAGE_REGISTRY_USERNAME%" />
+         <add key="ClearTextPassword" value="%GITLAB_PACKAGE_REGISTRY_PASSWORD%" />
+     </gitlab>
+  </packageSourceCredentials>
+</configuration>
+```
+
+  NAME | REQUIRED (Y/N) | PURPOSE / EXAMPLE VALUES
+--- | --- | ---
+GITLAB_PACKAGE_REGISTRY_USERNAME | Y | username to authenticate to gitlab / `First.Last`. Unlike the variable in pipeline, this value must be the exact unique name of the deploy token. This token can be obtained by going to `Repo` -> `Settings` -> `Repository` -> `Deploy Tokens`.
+GITLAB_PACKAGE_REGISTRY_PASSWORD | Y | password to authenticate to gitlab / `Dxxxxxxxxxxxxx`. This token can be obtained by going to `Repo` -> `Settings` -> `Repository` -> `Deploy Tokens`.
+NUGET_PLATFORM_URL | Y | platform URL to allow required common package imports / `https://<your_repo_domain>/api/v4/projects/<common_package_group_id>/nuget/index.json`
+NUGET_SOURCE_URL | Y | nuget source URL to allow required nuget owned package imports / `https://api.nuget.org/v3/index.json`
+
+See [.env.example](.env.example) for more info
+
+### In repository's CI/CD setting variables
+
+NAME | REQUIRED (Y/N) | PURPOSE / EXAMPLE VALUES
+--- | --- | ---
+CONTAINER_REGISTRY_URL | Y | endpoint for container registry for pipeline to push image to / `xxxx.azurecr.com`
+CONTAINER_REGISTRY_USER | Y | username to authenticate to the destination container registry / `registry_user`
+CONTAINER_REGISTRY_ACCESS_TOKEN | Y | password to authenticate to the destination container registry / `xxxxxxxxxxxxxxxxxxxx`
+NUGET_PLATFORM_URL | Y | platform URL to allow required common package imports / `https://<your_repo_domain>/api/v4/projects/<common_package_group_id>/nuget/index.json`
+NUGET_SOURCE_URL | Y | nuget source URL to allow required nuget owned package imports / `https://api.nuget.org/v3/index.json`
+
+</details>
+
 ### Workflow Piplines For GitHub
 
 Docker file is created under root /Dockerfile which does a build and push to the configured registry container.
@@ -78,7 +125,8 @@ CONTAINER_REGISTRY_ACCESS_TOKEN : conatiner-registry-accesstoken
 CONTAINER_REGISTRY_USER : conatiner-registry-user
 PACKAGE_REGISTRY_USERNAME : Github-package-registry-user-where-commonisstored
 PACKAGE_REGISTRY_PASSWORD: Github-package-registry-password
-PACKAGE_REGISTRY_ORG_NAME: organization-name-for-the-package-registry
+NUGET_PLATFORM_URL: Nuget-platform-github-url
+NUGET_SOURCE_URL: Nuget-common-package-source-url
 ```
 
 ### Workflow Piplines For GitLab
