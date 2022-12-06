@@ -70,6 +70,17 @@ PACKAGE_REGISTRY_PASSWORD | Y | password to authenticate to github / `ghp_xxxxxx
 NUGET_PLATFORM_URL | Y | platform URL to allow required common package imports / `https://<your_repo_domain>/api/v4/projects/<common_package_group_id>/nuget/index.json`
 NUGET_SOURCE_URL | Y | nuget source URL to allow required nuget owned package imports / `https://api.nuget.org/v3/index.json`
 
+### In local Dockerfile
+
+Make sure the dockerfile contains the following ARGs:
+
+```bash
+ARG GITHUB_PACKAGE_REGISTRY_USERNAME
+ARG GITHUB_PACKAGE_REGISTRY_PASSWORD
+ARG NUGET_SOURCE_URL
+ARG NUGET_PLATFORM_URL
+```
+
 </details>
 
 <details>
@@ -112,6 +123,17 @@ CONTAINER_REGISTRY_ACCESS_TOKEN | Y | password to authenticate to the destinatio
 NUGET_PLATFORM_URL | Y | platform URL to allow required common package imports / `https://<your_repo_domain>/api/v4/projects/<common_package_group_id>/nuget/index.json`
 NUGET_SOURCE_URL | Y | nuget source URL to allow required nuget owned package imports / `https://api.nuget.org/v3/index.json`
 
+### In local Dockerfile
+
+Make sure the dockerfile contains the following ARGs:
+
+```bash
+ARG GITLAB_PACKAGE_REGISTRY_USERNAME
+ARG GITLAB_PACKAGE_REGISTRY_PASSWORD
+ARG NUGET_SOURCE_URL
+ARG NUGET_PLATFORM_URL
+```
+
 </details>
 
 ### Workflow Piplines For GitHub
@@ -129,7 +151,7 @@ NUGET_PLATFORM_URL: Nuget-platform-github-url
 NUGET_SOURCE_URL: Nuget-common-package-source-url
 ```
 
-### Workflow Piplines For GitLab
+### Workflow Pipelines For GitLab
 
 - Create the necessary Common library packages using repo <https://code.afcmade.com/devteam/cse/cse-efr-coral/templates/NetworkObservabilityUtilities>
 - Create a GitLab Pipline Runner for the group if not already available. Refer to the steps to create a runner with the `efr` tag [here](https://dev.azure.com/CSECodeHub/CSE%20Gov%20-%20Mission%20Capabilities/_wiki/wikis/513266---EFR---Azure-Mission-Edge-Application-Platform.wiki/31862/GitLab-Runner-for-use-with-Coral-GitLab-pipelines)

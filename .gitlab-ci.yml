@@ -31,8 +31,8 @@ variables:
   CONTAINER_IMAGE_NAME: ${CI_PROJECT_NAME}
   GITLAB_PACKAGE_REGISTRY_USERNAME: gitlab-ci-token
   GITLAB_PACKAGE_REGISTRY_PASSWORD: $CI_JOB_TOKEN
-  NUGET_SOURCE_VALUE: $NUGET_SOURCE_VALUE
-  NUGET_PLATFORM_VALUE: $NUGET_PLATFORM_VALUE
+  NUGET_SOURCE_URL: $NUGET_SOURCE_URL
+  NUGET_PLATFORM_URL: $NUGET_PLATFORM_URL
 
 build-dotnet-seed:
   stage: build
@@ -60,8 +60,7 @@ docker-build-and-push:
   tags:
     - efr
   image: docker:19.03.12
-  # image:
-  #   name: docker:latest
+    # name: docker:latest
   variables:
     DOCKER_HOST: tcp://docker:2376
     DOCKER_TLS_CERTDIR: "/certs"
@@ -74,10 +73,14 @@ docker-build-and-push:
     - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == "main"
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
   script:
-    - CONTAINER_IMAGE_NAME_LOWER=$(echo $CONTAINER_IMAGE_NAME | tr '[:upper:]' '[:lower:]')
+    - lowerstr=$(echo $CONTAINER_IMAGE_NAME | tr '[:upper:]' '[:lower:]')
     - echo "===== Login to Container Registry ====="
     - echo ${CONTAINER_REGISTRY_ACCESS_TOKEN} | docker login ${CONTAINER_REGISTRY_URL} --username ${CONTAINER_REGISTRY_USER} --password-stdin
 
     - echo "===== Build and push ====="
-    - docker build -t ${CONTAINER_REGISTRY_URL}/${CONTAINER_IMAGE_NAME_LOWER}:${TAG_NAME} . --build-arg GITLAB_PACKAGE_REGISTRY_USERNAME=$GITLAB_PACKAGE_REGISTRY_USERNAME --build-arg GITLAB_PACKAGE_REGISTRY_PASSWORD=$GITLAB_PACKAGE_REGISTRY_PASSWORD
-    - docker push ${CONTAINER_REGISTRY_URL}/${CONTAINER_IMAGE_NAME_LOWER}
+    - docker build -t ${CONTAINER_REGISTRY_URL}/${lowerstr}:${TAG_NAME} .
+      --build-arg GITLAB_PACKAGE_REGISTRY_USERNAME=$GITLAB_PACKAGE_REGISTRY_USERNAME
+      --build-arg GITLAB_PACKAGE_REGISTRY_PASSWORD=$GITLAB_PACKAGE_REGISTRY_PASSWORD
+      --build-arg NUGET_SOURCE_URL=$NUGET_SOURCE_URL
+      --build-arg NUGET_PLATFORM_URL=$NUGET_PLATFORM_URL
+    - docker push ${CONTAINER_REGISTRY_URL}/${lowerstr}
