@@ -30,9 +30,16 @@ Output:
 
 ![Saved event](docs/db.png)
 
-### Application Development
+## Application Development
 
-After secret file `.env` has been configured, load it with `export 'cat .env' && bash`
+The project contains a [sample .env](./.env.example) file that must be configured and made into a .env file before dotnet commands can be issued.
+Once the file has been configured, there are three ways it can be loaded.
+
+- The most simple way is just by opening a new bash terminal. The .env file will be injected into the environment automatically.
+- The following command can be issued to load the .env `source .env`
+- If the above two doesn't work, the following command can be issued if the .env file has comments ``export `cat .env | awk '!/^[[:blank:]]*$/' | grep -o '^[^#]*'` && bash``. If comments are removed from the .env file then this command will work ``export `cat .env` && bash``
+
+After the .env is loaded the following commands will work.
 
 - In src/App, run `dotnet build` to build your app
 - In src/App, run `dotnet run` to run your app
@@ -41,6 +48,23 @@ After secret file `.env` has been configured, load it with `export 'cat .env' &&
 ## Environment Configuration
 
 The following variables are required to allow  successful pipeline and local builds. Select a platform to view.
+
+### Environment variables necessary for local development
+
+NAME | REQUIRED (Y/N) | PURPOSE / EXAMPLE VALUES
+--- | --- | ---
+EVENTDATA_PROCESS_QUEUE | Y | Queue name to push messages
+EVENT_META_DATA_DIRECTORY | Y | Directory containing event meta data
+FILE_POLLING_INTERVAL | N | Polling intervals for finding zipped pcaps(defaults to 30000ms or 30 secs)
+SQL_SERVER_HOST | Y | SQL server hostname
+SQL_SERVER_USERNAME | Y | SQL server username
+SQL_SERVER_PASSWORD | Y | SQL server password
+DB_CONNECTION_STRING | Y | SQL server database connection string
+RABBITMQ_HOSTNAME | Y | RabbitMQ hostname
+RABBITMQ_USERNAME | Y | RabbitMQ username to use for connection
+RABBITMQ_PASSWORD | Y | RabbitMQ password
+RABBITMQ_PORT | N | RabbitMQ host port(defaults to 5672)
+ELASTICSEARCH_URI| N | When provided logs will be pushed to an elasticsearch instance
 
 <details>
   <summary>GitHub Variables</summary>
@@ -92,8 +116,8 @@ In repo's `nuget.config` file, update the file to point to use gitlab variables,
 <configuration>
   <packageSources>
      <clear />
-	 <add key="nuget" value="%NUGET_SOURCE_URL%" />
-	 <add key="gitlab" value="%NUGET_PLATFORM_URL%" />
+  <add key="nuget" value="%NUGET_SOURCE_URL%" />
+  <add key="gitlab" value="%NUGET_PLATFORM_URL%" />
   </packageSources>
   <packageSourceCredentials>
      <gitlab>

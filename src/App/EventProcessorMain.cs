@@ -1,12 +1,13 @@
-using System;
 using System.Diagnostics.CodeAnalysis;
 using EFR.NetworkObservability.Common;
 using EFR.NetworkObservability.Common.FileWatcher;
+using EFR.NetworkObservability.Common.Logging;
 using EFR.NetworkObservability.DataModel.Contexts;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Serilog;
 
 namespace EFR.NetworkObservability.EventProcessor;
 
@@ -22,6 +23,7 @@ public class EventProcessorMain
   /// </summary>
   public static IHost CreateHost(string[] args)
     => Host.CreateDefaultBuilder(args)
+        .UseSerilog(SerilogLogger.instance)
         .ConfigureServices((hostContext, services) =>
         {
           string eventMetaDataDir = Utils.GetEnvVar(Constants.EVENT_META_DATA_DIRECTORY);

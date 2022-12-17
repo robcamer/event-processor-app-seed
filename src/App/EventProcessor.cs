@@ -7,7 +7,7 @@ using EFR.NetworkObservability.DataModel.Services;
 using EFR.NetworkObservability.RabbitMQ;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
+using Serilog;
 using static EFR.NetworkObservability.Common.Constants;
 
 namespace EFR.NetworkObservability.EventProcessor;
@@ -18,7 +18,7 @@ namespace EFR.NetworkObservability.EventProcessor;
 public class EventProcessor
 {
   private readonly PollingFileWatcher fileWatcher;
-  private readonly ILogger<EventProcessor> logger;
+  private readonly ILogger logger;
   private readonly IBus bus;
   private readonly IDbContextFactory<PcapContext> contextFactory;
   private readonly string eventDataDir;
@@ -32,7 +32,7 @@ public class EventProcessor
   /// <param name="bus">The logger instance</param>
   /// <param name="fileWatcher">Class which uses .NET FileSystemWatcher to monitor for new files.</param>
   /// <param name="contextFactory">Database context scope factory</param>
-  public EventProcessor(ILogger<EventProcessor> logger, IBus bus, PollingFileWatcher fileWatcher, IDbContextFactory<PcapContext> contextFactory)
+  public EventProcessor(ILogger logger, IBus bus, PollingFileWatcher fileWatcher, IDbContextFactory<PcapContext> contextFactory)
   {
 
     this.logger = logger;
@@ -62,7 +62,7 @@ public class EventProcessor
     };
 
     long id = await service.InsertEventMetaDataAsync(eventMetaData);
-    logger.LogInformation("Event Meta Data Inserted with ID: {id} ", id);
+    logger.Information($"Event Meta Data Inserted with ID: {id}!");
   }
 
   private async void PublishMessage(EventDays eventdays)
@@ -83,7 +83,7 @@ public class EventProcessor
     }
     catch (Exception e)
     {
-      logger.LogError("Issue publishing event data message to RabbitMQ: {}\n{}", eventdays.ToString(), e);
+      logger.Error(e, $"Issue publishing event data message to RabbitMQ: {eventdays}!");
     }
   }
 
@@ -93,15 +93,29 @@ public class EventProcessor
   /// <param name="filePath">Directory to monitor</param>
   public void OnFileCreated(string filePath)
   {
+    if (string.IsNullOrEmpty(filePath) is true)
+    {
+      logger.Error($"Provided filepath is null!");
+      return;
+    }
+
+    var fileInfo = new FileInfo(filePath);
+
+    if (fileInfo.Exists is false)
+    {
+      logger.Error($"File: {filePath} does not exists!");
+      return;
+    }
+
+    if (fileInfo.Length is 0)
+    {
+      logger.Error($"File: {filePath} is empty!");
+      return;
+    }
+
     if (Utils.FileAvailable(filePath))
     {
       Process(filePath);
-    }
-
-    if ((string.IsNullOrEmpty(filePath) is false) &&
-      (File.Exists(filePath) is true))
-    {
-      File.Delete(filePath);
     }
   }
 
@@ -110,19 +124,19 @@ public class EventProcessor
     try
     {
       string jsonString = File.ReadAllText(filePath);
-      EventData eventData = JsonSerializer.Deserialize<EventData>(jsonString)!;
+      EventData eventData = JsonSerializer.Deserialize<EventData>(jsonString);
 
       if (eventData is null)
       {
-        logger.LogError($"Unable to deserialize {Path.GetFileName(filePath)} to an EventData object");
+        logger.Error($"Unable to deserialize {Path.GetFileName(filePath)} to an EventData object!");
       }
       else if (eventData.EventDays is null)
       {
-        logger.LogError($"{Path.GetFileName(filePath)} doesn't contain an EventDays object");
+        logger.Error($"{Path.GetFileName(filePath)} doesn't contain an EventDays object!");
       }
       else if (eventData.EventDays.Count == 0)
       {
-        logger.LogError($"{Path.GetFileName(filePath)} doesn't contain any EventDay data");
+        logger.Error($"{Path.GetFileName(filePath)} doesn't contain any EventDay data!");
       }
       else
       {
@@ -132,10 +146,12 @@ public class EventProcessor
           PublishMessage(eventdays);
         }
       }
+
+      File.Delete(filePath);
     }
-    catch (System.Exception e)
+    catch (Exception e)
     {
-      logger.LogError("Error in Processing EventMetaData {}\n{}", filePath, e);
+      logger.Error(e, $"Error in Processing EventMetaData {filePath}!", filePath);
     }
 
   }
@@ -148,31 +164,7 @@ public class EventProcessor
     fileWatcher.StartPolling(pollingInterval);
   }
 
-  private class EventData
-  {
-    public IList<EventDays> EventDays
-    {
-      get; set;
-    }
-  }
+  private record EventData(IList<EventDays> EventDays);
 
-  private class EventDays
-  {
-    public string JulianDay
-    {
-      get; set;
-    }
-    public string Ready
-    {
-      get; set;
-    }
-    public string ReProcess
-    {
-      get; set;
-    }
-    public string IntervalInSeconds
-    {
-      get; set;
-    }
-  }
+  private record EventDays(string JulianDay, string Ready, string ReProcess, string IntervalInSeconds);
 }

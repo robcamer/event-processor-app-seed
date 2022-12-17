@@ -26,7 +26,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\App\EventProcessor.csproj" />
-		<!-- <ProjectReference Include="..\App.Test.TestUtils\TestUtils.csproj" /> -->
     </ItemGroup>
 
 </Project>

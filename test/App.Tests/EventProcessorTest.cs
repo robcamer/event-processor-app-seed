@@ -1,19 +1,14 @@
-using System;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Linq;
-using System.Linq.Expressions;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using EFR.NetworkObservability.Common;
 using EFR.NetworkObservability.Common.FileWatcher;
 using EFR.NetworkObservability.DataModel.Contexts;
 using EFR.NetworkObservability.RabbitMQ;
+using EFR.NetworkObservability.TestEventProcessor.Test;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Moq;
+using Serilog;
 using Xunit;
 
 namespace EFR.NetworkObservability.EventProcessor.Test;
@@ -27,15 +22,15 @@ public class TestEventProcessor : IDisposable
         .Options;
 
   private string? txtFileName;
-  private string eventDataDir;
-  private string tmpDir;
-  private PcapContext context;
-  private EventProcessor eventProcessor;
-  private Mock<ILogger<EventProcessor>> mockLogger;
-  private Mock<IBus> mockBus;
-  private Mock<ISendEndpoint> mockEndpoint;
-  private Mock<PollingFileWatcher> mockFileWatcher;
-  private Mock<IDbContextFactory<PcapContext>> mockDbFactory;
+  private readonly string eventDataDir;
+  private readonly string tmpDir;
+  private readonly PcapContext context;
+  private readonly EventProcessor eventProcessor;
+  private readonly Mock<ILogger> mockLogger;
+  private readonly Mock<IBus> mockBus;
+  private readonly Mock<ISendEndpoint> mockEndpoint;
+  private readonly Mock<PollingFileWatcher> mockFileWatcher;
+  private readonly Mock<IDbContextFactory<PcapContext>> mockDbFactory;
 
   public TestEventProcessor()
   {
@@ -52,7 +47,7 @@ public class TestEventProcessor : IDisposable
     Environment.SetEnvironmentVariable(Constants.EVENTDATA_PROCESS_QUEUE, Constants.PCAP_PROCESS_QUEUE);
     Environment.SetEnvironmentVariable(Constants.DB_CONNECTION_STRING, "test");
 
-    mockLogger = new Mock<ILogger<EventProcessor>>();
+    mockLogger = new Mock<ILogger>();
     mockBus = new Mock<IBus>();
     mockEndpoint = new Mock<ISendEndpoint>();
     mockFileWatcher = new Mock<PollingFileWatcher>(eventDataDir, "*.*");
@@ -67,34 +62,134 @@ public class TestEventProcessor : IDisposable
 
   public void Dispose()
   {
-    Dispose(true);
+    context.Database.EnsureDeleted();
+    context.Dispose();
+
     GC.SuppressFinalize(this);
   }
 
-  protected virtual void Dispose(bool disposing)
+  private void WriteJsonFile(string jsonString)
   {
-    if (disposing)
+    txtFileName = Path.Combine(eventDataDir, "test.json");
+
+    using (FileStream file = File.Create(txtFileName))
     {
-      try
-      {
-        if (context is not null)
-        {
-          context.Database.EnsureDeleted();
-          context.Dispose();
-        }
-      }
-      catch (Exception) { }
-    }
+      byte[] data = Encoding.UTF8.GetBytes(jsonString);
+      file.Write(data, 0, data.Length);
+      file.Flush();
+      file.Close();
+    };
   }
 
-  private static void CreateEmptyFile(string filePath)
+  [Fact]
+  public void TestInvalidZeroBytesJsonFile()
   {
-    using (File.Create(filePath))
-    {
-    }
+    txtFileName = Path.Combine(eventDataDir, "test1.json");
+
+    File.Create(txtFileName).Dispose();
+
+    eventProcessor.OnFileCreated(txtFileName);
+
+    mockLogger.ShouldLogError($"File: {txtFileName} is empty!");
+
+    Assert.True(context.EventMetaDatas.Count() is 0);
+
+    mockEndpoint.Verify(mock => mock.Send(It.IsAny<EventMetaDataMessage>(), It.IsAny<CancellationToken>()), Times.Never);
   }
 
-  private void CreateJsonFile()
+  [Fact]
+  public void TestInvalidJsonFile()
+  {
+    txtFileName = Path.Combine(eventDataDir, "test2.json");
+
+    eventProcessor.OnFileCreated(txtFileName);
+
+    mockLogger.ShouldLogError($"File: {txtFileName} does not exists!");
+
+    Assert.True(context.EventMetaDatas.Count() is 0);
+
+    mockEndpoint.Verify(mock => mock.Send(It.IsAny<EventMetaDataMessage>(), It.IsAny<CancellationToken>()), Times.Never);
+  }
+
+  [Fact]
+  public void TestOnFileCreatedJsonBadArrayName()
+  {
+    string jsonString = @"{""EventData"" : [
+      	  {
+          ""JulianDay"": ""123"",
+          ""Ready"" : ""true"",
+          ""ReProcess"" : ""false"",
+          ""IntervalInSeconds"" : ""300""
+          },
+          {
+          ""JulianDay"": ""124"",
+          ""Ready"" : ""true"",
+          ""ReProcess"" : ""true"",
+          ""IntervalInSeconds"" : ""200""
+          },
+          {
+          ""JulianDay"": ""125"",
+          ""Ready"" : ""true"",
+          ""ReProcess"" : ""false"",
+          ""IntervalInSeconds"" : ""100""
+          }
+  		]
+		}";
+
+    WriteJsonFile(jsonString);
+
+    eventProcessor.OnFileCreated(txtFileName);
+
+    mockLogger.ShouldLogError($"{Path.GetFileName(txtFileName)} doesn't contain an EventDays object");
+
+    Assert.True(context.EventMetaDatas.Count() is 0);
+
+    mockEndpoint.Verify(mock => mock.Send(It.IsAny<EventMetaDataMessage>(), It.IsAny<CancellationToken>()), Times.Never);
+
+    Assert.True(!File.Exists(txtFileName));
+  }
+
+  [Fact]
+  public void TestOnFileCreateEmptyJsonNameFile()
+  {
+    string jsonString = @"{}";
+
+    WriteJsonFile(jsonString);
+
+    eventProcessor.OnFileCreated(txtFileName);
+
+    mockLogger.ShouldLogError($"{Path.GetFileName(txtFileName)} doesn't contain an EventDays object");
+
+    Assert.True(context.EventMetaDatas.Count() is 0);
+
+    mockEndpoint.Verify(mock => mock.Send(It.IsAny<EventMetaDataMessage>(), It.IsAny<CancellationToken>()), Times.Never);
+
+    Assert.True(!File.Exists(txtFileName));
+  }
+
+  [Fact]
+  public void TestOnFileCreatedJsonEmptyArray()
+  {
+    string jsonString = @"{""EventData"" : [
+   		]
+		}";
+
+    WriteJsonFile(jsonString);
+
+    eventProcessor.OnFileCreated(txtFileName);
+
+    mockLogger.ShouldLogError($"{Path.GetFileName(txtFileName)} doesn't contain an EventDays object");
+
+
+    Assert.True(context.EventMetaDatas.Count() is 0);
+
+    mockEndpoint.Verify(mock => mock.Send(It.IsAny<EventMetaDataMessage>(), It.IsAny<CancellationToken>()), Times.Never);
+
+    Assert.True(!File.Exists(txtFileName));
+  }
+
+  [Fact]
+  public void TestOnFileCreated()
   {
     string jsonString = @"{""EventDays"" : [
       	  {
@@ -119,173 +214,7 @@ public class TestEventProcessor : IDisposable
 		}";
 
     WriteJsonFile(jsonString);
-  }
 
-  private void CreateJsonBadArrayNameFile()
-  {
-    string jsonString = @"{""EventData"" : [
-      	  {
-          ""JulianDay"": ""123"",
-          ""Ready"" : ""true"",
-          ""ReProcess"" : ""false"",
-          ""IntervalInSeconds"" : ""300""
-          },
-          {
-          ""JulianDay"": ""124"",
-          ""Ready"" : ""true"",
-          ""ReProcess"" : ""true"",
-          ""IntervalInSeconds"" : ""200""
-          },
-          {
-          ""JulianDay"": ""125"",
-          ""Ready"" : ""true"",
-          ""ReProcess"" : ""false"",
-          ""IntervalInSeconds"" : ""100""
-          }
-  		]
-		}";
-
-    WriteJsonFile(jsonString);
-  }
-
-  private void CreateEmptyJsonNameFile()
-  {
-    string jsonString = @"{}";
-
-    WriteJsonFile(jsonString);
-  }
-
-  private void CreateJsonEmptyArrayFile()
-  {
-    string jsonString = @"{""EventData"" : [
-   		]
-		}";
-
-    WriteJsonFile(jsonString);
-  }
-
-  private void WriteJsonFile(string jsonString)
-  {
-    txtFileName = Path.Combine(eventDataDir, "test.json");
-
-    using (FileStream file = File.Create(txtFileName))
-    {
-      byte[] data = Encoding.UTF8.GetBytes(jsonString);
-      file.Write(data, 0, data.Length);
-      file.Flush();
-      file.Close();
-    };
-  }
-
-  private void VerifyLog(LogLevel logLevel, string message)
-  {
-    VerifyLog(logLevel, Times.Once(), message);
-  }
-
-  private void VerifyLog(LogLevel logLevel, Times times, string message)
-  {
-    mockLogger.Verify(
-          x => x.Log(
-            logLevel,
-            It.IsAny<EventId>(),
-            It.Is<It.IsAnyType>((o, t) => string.Equals(message, o.ToString(), StringComparison.InvariantCultureIgnoreCase)),
-            It.IsAny<Exception>(),
-            It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-          times);
-  }
-
-  [Fact]
-  public void TestInvalidZeroBytesJsonFile()
-  {
-    txtFileName = Path.Combine(eventDataDir, "test1.json");
-
-    CreateEmptyFile(txtFileName);
-    eventProcessor.OnFileCreated(txtFileName);
-
-    Expression<Func<object, Type, bool>> matcher = (object value, Type type) =>
-      (value.ToString()!.StartsWith("Error in Processing EventMetaData"));
-    TestUtils.VerifyLog(mockLogger, LogLevel.Error, times: Times.Once(), matcher: matcher);
-
-    // //validate event meta data entry
-    Assert.True(context.EventMetaDatas.Count() is 0);
-
-    // // validate rabbitmq messages sent
-    mockEndpoint.Verify(mock => mock.Send(It.IsAny<EventMetaDataMessage>(), It.IsAny<CancellationToken>()), Times.Never);
-  }
-
-  [Fact]
-  public void TestInvalidJsonFile()
-  {
-    txtFileName = Path.Combine(eventDataDir, "test2.json");
-    eventProcessor.OnFileCreated(txtFileName);
-
-    Expression<Func<object, Type, bool>> matcher = (object value, Type type) =>
-      (value.ToString()!.StartsWith("Error in Processing EventMetaData"));
-    TestUtils.VerifyLog(mockLogger, LogLevel.Error, times: Times.Never(), matcher: matcher);
-
-    // //validate event meta data entry
-    Assert.True(context.EventMetaDatas.Count() is 0);
-
-    // // validate rabbitmq messages not sent
-    mockEndpoint.Verify(mock => mock.Send(It.IsAny<EventMetaDataMessage>(), It.IsAny<CancellationToken>()), Times.Never);
-  }
-
-  [Fact]
-  public void TestOnFileCreatedJsonBadArrayName()
-  {
-    CreateJsonBadArrayNameFile();
-    eventProcessor.OnFileCreated(txtFileName);
-
-    VerifyLog(LogLevel.Error, $"{Path.GetFileName(txtFileName)} doesn't contain an EventDays object");
-
-    //validate event meta data entry
-    Assert.True(context.EventMetaDatas.Count() is 0);
-
-    // // validate rabbitmq messages not sent
-    mockEndpoint.Verify(mock => mock.Send(It.IsAny<EventMetaDataMessage>(), It.IsAny<CancellationToken>()), Times.Never);
-
-    Assert.True(!File.Exists(txtFileName));
-  }
-
-
-  [Fact]
-  public void TestOnFileCreateEmptyJsonNameFile()
-  {
-    CreateEmptyJsonNameFile();
-    eventProcessor.OnFileCreated(txtFileName);
-
-    VerifyLog(LogLevel.Error, $"{Path.GetFileName(txtFileName)} doesn't contain an EventDays object");
-
-    //validate event meta data entry
-    Assert.True(context.EventMetaDatas.Count() is 0);
-
-    // // validate rabbitmq messages not sent
-    mockEndpoint.Verify(mock => mock.Send(It.IsAny<EventMetaDataMessage>(), It.IsAny<CancellationToken>()), Times.Never);
-
-    Assert.True(!File.Exists(txtFileName));
-  }
-
-  [Fact]
-  public void TestOnFileCreatedJsonEmptyArray()
-  {
-    CreateJsonEmptyArrayFile();
-    eventProcessor.OnFileCreated(txtFileName);
-
-    VerifyLog(LogLevel.Error, $"{Path.GetFileName(txtFileName)} doesn't contain an EventDays object");
-
-    //validate event meta data entry
-    Assert.True(context.EventMetaDatas.Count() is 0);
-
-    // // validate rabbitmq messages not sent
-    mockEndpoint.Verify(mock => mock.Send(It.IsAny<EventMetaDataMessage>(), It.IsAny<CancellationToken>()), Times.Never);
-
-    Assert.True(!File.Exists(txtFileName));
-  }
-
-  [Fact]
-  public void TestOnFileCreated()
-  {
-    CreateJsonFile();
     eventProcessor.OnFileCreated(txtFileName);
 
     //validate event meta data entry
@@ -296,30 +225,5 @@ public class TestEventProcessor : IDisposable
     mockEndpoint.Verify(mock => mock.Send(It.IsAny<EventMetaDataMessage>(), It.IsAny<CancellationToken>()), Times.Exactly(3));
 
     Assert.True(!File.Exists(txtFileName));
-  }
-}
-
-public static class TestUtils
-{
-  public static void VerifyLog<T>(Mock<ILogger<T>> mockLogger, LogLevel logLevel, string? message = null, Expression<Func<object, Type, bool>>? matcher = null)
-  {
-    VerifyLog(mockLogger, logLevel, Times.Once(), message, matcher);
-  }
-
-  public static void VerifyLog<T>(Mock<ILogger<T>> mockLogger, LogLevel logLevel, Times times, string? message = null, Expression<Func<object, Type, bool>>? matcher = null)
-  {
-    if (matcher == null)
-    {
-      matcher = (value, type) => string.Equals(message, value.ToString(), StringComparison.InvariantCultureIgnoreCase);
-    }
-
-    mockLogger.Verify(
-          x => x.Log(
-            logLevel,
-            It.IsAny<EventId>(),
-            It.Is<It.IsAnyType>(matcher),
-            It.IsAny<Exception>(),
-            It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-          times);
   }
 }
