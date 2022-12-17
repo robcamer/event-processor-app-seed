@@ -3,13 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30114.105
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A516BB65-6B06-4BE1-B9D3-90F91D40F02C}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventProcessor", "src\App\EventProcessor.csproj", "{D21741E1-D11A-4E39-B22D-4BD2F7BEFABE}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{247F4594-C221-4F78-A21B-922366D6B374}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "App.Test", "test\App.Test\App.Test.csproj", "{28F51309-D500-45DA-A181-DC92DCB6FF71}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventProcessor.Tests", "test\App.Tests\EventProcessor.Tests.csproj", "{28F51309-D500-45DA-A181-DC92DCB6FF71}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -28,9 +24,5 @@ Global
 		{28F51309-D500-45DA-A181-DC92DCB6FF71}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{28F51309-D500-45DA-A181-DC92DCB6FF71}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{28F51309-D500-45DA-A181-DC92DCB6FF71}.Release|Any CPU.Build.0 = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{D21741E1-D11A-4E39-B22D-4BD2F7BEFABE} = {A516BB65-6B06-4BE1-B9D3-90F91D40F02C}
-		{28F51309-D500-45DA-A181-DC92DCB6FF71} = {247F4594-C221-4F78-A21B-922366D6B374}
 	EndGlobalSection
 EndGlobal

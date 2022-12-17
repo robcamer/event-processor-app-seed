@@ -1,100 +1,56 @@
 {
 	"name": "C# (.NET)",
-    "build": {
-        "dockerfile": "./Dockerfile",
-        "context": "."
-    },
-	// Set *default* container specific settings.json values on container create.
-	"settings": {
-		"workbench.colorTheme": "Atom One Dark",
-		"workbench.iconTheme": "vscode-icons"
+	"build": {
+		"dockerfile": "Dockerfile"
 	},
-    "features": {
-        "ghcr.io/devcontainers/features/common-utils:1": {
-            "installZsh": "true",
-            "username": "vscode",
-            "uid": "1000",
-            "gid": "1000",
-            "upgradePackages": "true"
-        },
-        "ghcr.io/devcontainers/features/node:1": {
-            "version": "none"
-        },
-		"docker-in-docker": "latest"
-    },
-    "overrideFeatureInstallOrder": [
-        "ghcr.io/devcontainers/features/common-utils"
-    ],
-	// Configure tool-specific properties.
-	"customizations": {
-		// Configure properties specific to VS Code.
-		"vscode": {
-			// Add the IDs of extensions you want installed when the container is created.
-			"extensions": [
-				"ms-dotnettools.csharp",
-				"rogalmic.bash-debug",
-				"mads-hartmann.bash-ide-vscode",
-				"timonwong.shellcheck",
-				"jeff-hykin.better-shellscript-syntax",
-				"formulahendry.code-runner",
-				"eamodio.gitlens",
-				"streetsidesoftware.code-spell-checker",
-				"yzhang.markdown-all-in-one",
-				"visualstudioexptteam.vscodeintellicode",
-				"ms-azuretools.vscode-azureresourcegroups",
-				"ms-azuretools.vscode-docker",
-				"ms-azuretools.vscode-azurefunctions",
-				"ms-azuretools.vscode-azurestorage",
-				"ms-vscode.azure-account",
-				"ms-kubernetes-tools.vscode-kubernetes-tools",
-				"ms-mssql.mssql",
-				"akamud.vscode-theme-onedark",
-				"vscode-icons-team.vscode-icons",
-				"coenraads.bracket-pair-colorizer-2",
-				"mikestead.dotenv",
-				"shardulm94.trailing-spaces",
-				"davidanson.vscode-markdownlint",
-				"formulahendry.dotnet-test-explorer",
-				"semasquare.vscode-coverage-gutters",
-				"bierner.markdown-emoji",
-				"tomoki1207.pdf",
-				"bierner.markdown-mermaid",
-				"editorconfig.editorconf"
-			]
+	"settings": {
+		"dotnet-test-explorer.testProjectPath": "**/*Test*.@(csproj|vbproj|fsproj)",
+		"omnisharp.defaultLaunchSolution": "EventProcessor.sln",
+		"omnisharp.organizeImportsOnFormat": true,
+		"omnisharp.enableEditorConfigSupport": true,
+		"omnisharp.enableRoslynAnalyzers": true,
+		"files.eol": "\n",
+		"editor.tabSize": 2,
+		"editor.insertSpaces": true,
+		"editor.detectIndentation": false,
+		"[markdown]": {
+			"editor.defaultFormatter": "DavidAnson.vscode-markdownlint"
+		},
+		"editor.formatOnSave": true,
+		"trailing-spaces.trimOnSave": true,
+		"terminal.integrated.defaultProfile.linux": "bash",
+		"terminal.integrated.profiles.linux": {
+			"bash": {
+				"path": "/bin/bash",
+				"icon": "terminal-bash",
+				"args": [
+					"-c",
+					"if [ -e .env ]; then export `cat .env | awk '!/^[[:blank:]]*$/' | grep -o '^[^#]*'`; fi; bash;"
+				]
+			}
 		}
 	},
-		// Use 'forwardPorts' to make a list of ports inside the container available locally.
-		// "forwardPorts": [5000, 5001],
-		// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "bash git_hooks/install_hooks.sh",
-	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	// "forwardPorts": [5000, 5001],
-	// [Optional] To reuse of your local HTTPS dev cert:
-	//
-	// 1. Export it locally using this command:
-	//    * Windows PowerShell:
-	//        dotnet dev-certs https --trust; dotnet dev-certs https -ep "$env:USERPROFILE/.aspnet/https/aspnetapp.pfx" -p "SecurePwdGoesHere"
-	//    * macOS/Linux terminal:
-	//        dotnet dev-certs https --trust; dotnet dev-certs https -ep "${HOME}/.aspnet/https/aspnetapp.pfx" -p "SecurePwdGoesHere"
-	// 
-	// 2. Uncomment these 'remoteEnv' lines:
-	//    "remoteEnv": {
-	// 	      "ASPNETCORE_Kestrel__Certificates__Default__Password": "SecurePwdGoesHere",
-	//        "ASPNETCORE_Kestrel__Certificates__Default__Path": "/home/vscode/.aspnet/https/aspnetapp.pfx",
-	//    },
-	//
-	// 3. Do one of the following depending on your scenario:
-	//    * When using GitHub Codespaces and/or Remote - Containers:
-	//      1. Start the container
-	//      2. Drag ~/.aspnet/https/aspnetapp.pfx into the root of the file explorer
-	//      3. Open a terminal in VS Code and run "mkdir -p /home/vscode/.aspnet/https && mv aspnetapp.pfx /home/vscode/.aspnet/https"
-	//
-	//    * If only using Remote - Containers with a local container, uncomment this line instead:
-	//      "mounts": [ "source=${env:HOME}${env:USERPROFILE}/.aspnet/https,target=/home/vscode/.aspnet/https,type=bind" ],
-
-	// Use 'postCreateCommand' to run commands after the container is created.
-	// "postCreateCommand": "dotnet restore",
-
-	// Set `remoteUser` to `root` to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
-	"remoteUser": "vscode"
+	"extensions": [
+		"ms-dotnettools.csharp",
+		"timonwong.shellcheck",
+		"formulahendry.code-runner",
+		"eamodio.gitlens",
+		"streetsidesoftware.code-spell-checker",
+		"yzhang.markdown-all-in-one",
+		"vscode-icons-team.vscode-icons",
+		"coenraads.bracket-pair-colorizer-2",
+		"mikestead.dotenv",
+		"shardulm94.trailing-spaces",
+		"davidanson.vscode-markdownlint",
+		"formulahendry.dotnet-test-explorer",
+		"semasquare.vscode-coverage-gutters",
+		"bierner.markdown-emoji",
+		"tomoki1207.pdf",
+		"bierner.markdown-mermaid",
+		"editorconfig.editorconf"
+	],
+	"postCreateCommand": "bash git_hooks/setup.sh",
+	"features": {
+		"docker-in-docker": "latest"
+	}
 }
