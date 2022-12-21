@@ -1,10 +1,13 @@
-# For more details on app.yaml, see: https://aka.ms/coral/appyaml
-
-template: external-service
+template: istio-service
 deployments:
-  development:
-    target: development
+  dev:
+    target: dev
     clusters: 1
     values:
-      image: myregistry.io/myimage:tag
+      name: myimage
+      versionIndependentName: dotnet-app
+      version: "v1"
+      image: myregistry.io/myimage:main
       port: 5000
+      config: "EVENT_META_DATA_DIRECTORY: '/var/data/eventdata'\n  EVENTDATA_PROCESS_QUEUE: 'event_queue'\n  RABBITMQ_HOSTNAME: 'name.namespace.svc.cluster.local'\n  RABBITMQ_USERNAME: 'user'\n  RABBITMQ_PORT: '5672'"
+

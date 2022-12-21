@@ -49,20 +49,17 @@ After the .env is loaded the following commands will work.
 
 The following variables are required to allow  successful pipeline and local builds. Select a platform to view.
 
-### Environment variables necessary for local development
+### Environment variables necessary for local development or injection through app.yaml
 
 NAME | REQUIRED (Y/N) | PURPOSE / EXAMPLE VALUES
 --- | --- | ---
 EVENTDATA_PROCESS_QUEUE | Y | Queue name to push messages
-EVENT_META_DATA_DIRECTORY | Y | Directory containing event meta data
+EVENT_META_DATA_DIRECTORY | Y | Directory for event.json file
 FILE_POLLING_INTERVAL | N | Polling intervals for finding zipped pcaps(defaults to 30000ms or 30 secs)
-SQL_SERVER_HOST | Y | SQL server hostname
-SQL_SERVER_USERNAME | Y | SQL server username
-SQL_SERVER_PASSWORD | Y | SQL server password
-DB_CONNECTION_STRING | Y | SQL server database connection string
-RABBITMQ_HOSTNAME | Y | RabbitMQ hostname
+DB_CONNECTION_STRING | Y | SQL server database connection string: `SERVER=servicename.namespace;TRUSTSERVERCERTIFICATE=true;UID=sa;PASSWORD=xxx;` [Configured via Control Plane from Platform team](https://github.com/crew-athena-org/network-observability-control-plane-seed/tree/main/templates/istio-service#configuring-secrets)
+RABBITMQ_HOSTNAME | Y | RabbitMQ hostname: `name.namespace.svc.cluster.local`
 RABBITMQ_USERNAME | Y | RabbitMQ username to use for connection
-RABBITMQ_PASSWORD | Y | RabbitMQ password
+RABBITMQ_PASSWORD | Y | RabbitMQ password [Configured via Control Plane from Platform team](https://github.com/crew-athena-org/network-observability-control-plane-seed/tree/main/templates/istio-service#configuring-secrets)
 RABBITMQ_PORT | N | RabbitMQ host port(defaults to 5672)
 ELASTICSEARCH_URI| N | When provided logs will be pushed to an elasticsearch instance
 
