@@ -175,7 +175,7 @@ NUGET_SOURCE_URL: Nuget-common-package-source-url
 ### Workflow Pipelines For GitLab
 
 - Create the necessary Common library packages using repo <https://code.afcmade.com/devteam/cse/cse-efr-coral/templates/NetworkObservabilityUtilities>
-- Create a GitLab Pipline Runner for the group if not already available. Refer to the steps to create a runner with the `efr` tag [here](https://dev.azure.com/CSECodeHub/CSE%20Gov%20-%20Mission%20Capabilities/_wiki/wikis/513266---EFR---Azure-Mission-Edge-Application-Platform.wiki/31862/GitLab-Runner-for-use-with-Coral-GitLab-pipelines)
+- Create a GitLab Pipline Runner for the group if not already available. Document to create a runner with the runner tag can be found at network-observability-control-plane-seed/docs/design-decisions/gitlab-runner.md
 - Clone the App seed repo into GitLab
 - Create the below CICD variables
 
