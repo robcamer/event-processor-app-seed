@@ -9,6 +9,10 @@ deployments:
       version: "v1"
       image: myregistry.io/myimage:main
       port: 5000
+      requestsMemory: 256Mi
+      requestsCPU: 125m
+      limitsCPU: 1000m
+      limitsMemory: 1Gi
       secrets: true
       config: "EVENT_META_DATA_DIRECTORY: '/var/data/eventdata'\n  EVENTDATA_PROCESS_QUEUE: 'event_queue'\n  RABBITMQ_HOSTNAME: 'name.namespace.svc.cluster.local'\n  RABBITMQ_USERNAME: 'user'\n  RABBITMQ_PORT: '5672'"
 
