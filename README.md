@@ -10,6 +10,19 @@ Backlog in Coral project: [#170 Create new coral-seed-dotnet-core-webapi on .NET
 
 To get started with Coral, see the [platform setup instructions](https://github.com/microsoft/coral/blob/main/docs/platform-setup.md) in the main [Coral](https://github.com/microsoft/coral) repo.
 
+### For Github follow below
+To use this seed, the network-observability-utilities template repository needs to be configured as well. 
+This seed depends on nuget packages that will be deployed by the network-observability-utilities repo.
+
+Required packages:
+- EFR.NetworkObservability.Common
+- EFR.NetworkObservability.DataModel
+- EFR.NetworkObservability.RabbitMQ
+
+Once the network-observability-utilities repo is setup and the packages are deployed, you will need to give the repo access to those packages so the Github action can successfully build and deploy the image. You can do that by following the steps below:
+
+![Package Steps](./docs/packages.png)
+
 ## Baseline Features
 
 The application seed contains the following cloud-native capabilities:
