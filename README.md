@@ -190,8 +190,6 @@ For a sucessfull pipeline run, Once the dotnet repo is created add the below CI-
 CONTAINER_REGISTRY_URL : conatiner-registry-url
 CONTAINER_REGISTRY_ACCESS_TOKEN : conatiner-registry-accesstoken
 CONTAINER_REGISTRY_USER : conatiner-registry-user
-PACKAGE_REGISTRY_USERNAME : Github-repository-owner-name
-PACKAGE_REGISTRY_PASSWORD: Github-token
 NUGET_PLATFORM_URL: Nuget-platform-github-url
 NUGET_SOURCE_URL: Nuget-common-package-source-url
 ```
