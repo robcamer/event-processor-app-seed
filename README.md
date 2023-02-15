@@ -73,10 +73,10 @@ NAME | REQUIRED (Y/N) | PURPOSE / EXAMPLE VALUES
 EVENTDATA_PROCESS_QUEUE | Y | Queue name to push messages
 EVENT_META_DATA_DIRECTORY | Y | Directory for event.json file
 FILE_POLLING_INTERVAL | N | Polling intervals for finding zipped pcaps(defaults to 30000ms or 30 secs)
-DB_CONNECTION_STRING | Y | SQL server database connection string: `SERVER=servicename.namespace;TRUSTSERVERCERTIFICATE=true;UID=sa;PASSWORD=xxx;` [Configured via Control Plane from Platform team](https://github.com/crew-athena-org/network-observability-control-plane-seed/tree/main/templates/istio-service#configuring-secrets)
+DB_CONNECTION_STRING | Y | SQL server database connection string: `SERVER=servicename.namespace;TRUSTSERVERCERTIFICATE=true;UID=sa;PASSWORD=xxx;` [Configured via Control Plane from Platform team](https://github.com/microsoft/network-observability-control-plane-seed/tree/main/templates/istio-service#configuring-secrets)
 RABBITMQ_HOSTNAME | Y | RabbitMQ hostname: `name.namespace.svc.cluster.local`
 RABBITMQ_USERNAME | Y | RabbitMQ username to use for connection
-RABBITMQ_PASSWORD | Y | RabbitMQ password [Configured via Control Plane from Platform team](https://github.com/crew-athena-org/network-observability-control-plane-seed/tree/main/templates/istio-service#configuring-secrets)
+RABBITMQ_PASSWORD | Y | RabbitMQ password [Configured via Control Plane from Platform team](https://github.com/microsoft/network-observability-control-plane-seed/tree/main/templates/istio-service#configuring-secrets)
 RABBITMQ_PORT | N | RabbitMQ host port(defaults to 5672)
 ELASTICSEARCH_URI| N | When provided logs will be pushed to an elasticsearch instance
 
