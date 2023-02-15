@@ -19,6 +19,8 @@ Required packages:
 - EFR.NetworkObservability.DataModel
 - EFR.NetworkObservability.RabbitMQ
 
+[Note:] The package utilities instance should exist in the same org, since the pipline uses the token which has access to the same org
+
 Once the network-observability-utilities repo is setup and the packages are deployed, you will need to give the repo access to those packages so the Github action can successfully build and deploy the image. You can do that by following the steps below:
 
 ![Package Steps](./docs/packages.png)
@@ -87,8 +89,6 @@ ELASTICSEARCH_URI| N | When provided logs will be pushed to an elasticsearch ins
 
 NAME | REQUIRED (Y/N) | PURPOSE / EXAMPLE VALUES
 --- | --- | ---
-GITHUB_PACKAGE_REGISTRY_USERNAME | Y | username to authenticate to github / `username`. This token can be obtained by going to `Profile` -> `Settings` -> `Developer Settings` -> `Personal Access Tokens(PAT)`. It must contain at least `repo`, `workflow`, and `write:packages` permissions.
-GITHUB_PACKAGE_REGISTRY_PASSWORD | Y | password to authenticate to github / `Dxxxxxxxxxxxxx`. This token can be obtained by going to `Profile` -> `Settings` -> `Developer Settings` -> `Personal Access Tokens(PAT)`. It must contain at least `repo`, `workflow`, and `write:packages` permissions.
 NUGET_PLATFORM_URL | Y | platform URL to allow required common package imports / `https://nuget.pkg.github.com/<your-org-name>/index.json`
 NUGET_SOURCE_URL | Y | nuget source URL to allow required nuget owned package imports / `https://api.nuget.org/v3/index.json`
 
@@ -109,8 +109,6 @@ NAME | REQUIRED (Y/N) | PURPOSE / EXAMPLE VALUES
 CONTAINER_REGISTRY_URL | Y | endpoint for container registry for pipeline to push image to / `xxxx.azurecr.com`
 CONTAINER_REGISTRY_USER | Y | username to authenticate to the destination container registry / `registry_user`
 CONTAINER_REGISTRY_ACCESS_TOKEN | Y | password to authenticate to the destination container registry / `xxxxxxxxxxxxxxxxxxxx`
-PACKAGE_REGISTRY_USERNAME | Y | username to authenticate to github / `username`. This token can be obtained by going to `Profile` -> `Settings` -> `Developer Settings` -> `Personal Access Tokens(PAT)`. It must contain at least `repo`, `workflow`, and `write:packages` permissions.
-PACKAGE_REGISTRY_PASSWORD | Y | password to authenticate to github / `ghp_xxxxxxxxxxxxx`. This token can be obtained by going to `Profile` -> `Settings` -> `Developer Settings` -> `Personal Access Tokens(PAT)`. It must contain at least `repo`, `workflow`, and `write:packages` permissions.
 NUGET_PLATFORM_URL | Y | platform URL to allow required common package imports / `https://<your_repo_domain>/api/v4/projects/<common_package_group_id>/nuget/index.json`
 NUGET_SOURCE_URL | Y | nuget source URL to allow required nuget owned package imports / `https://api.nuget.org/v3/index.json`
 
@@ -150,8 +148,6 @@ In repo's `nuget.config` file, update the file to point to use gitlab variables,
 
   NAME | REQUIRED (Y/N) | PURPOSE / EXAMPLE VALUES
 --- | --- | ---
-GITLAB_PACKAGE_REGISTRY_USERNAME | Y | username to authenticate to gitlab / `First.Last`. Unlike the variable in pipeline, this value must be the exact unique name of the deploy token. This token can be obtained by going to `Repo` -> `Settings` -> `Repository` -> `Deploy Tokens`.
-GITLAB_PACKAGE_REGISTRY_PASSWORD | Y | password to authenticate to gitlab / `Dxxxxxxxxxxxxx`. This token can be obtained by going to `Repo` -> `Settings` -> `Repository` -> `Deploy Tokens`.
 NUGET_PLATFORM_URL | Y | platform URL to allow required common package imports / `https://<your_repo_domain>/api/v4/projects/<common_package_group_id>/nuget/index.json`
 NUGET_SOURCE_URL | Y | nuget source URL to allow required nuget owned package imports / `https://api.nuget.org/v3/index.json`
 
@@ -194,8 +190,8 @@ For a sucessfull pipeline run, Once the dotnet repo is created add the below CI-
 CONTAINER_REGISTRY_URL : conatiner-registry-url
 CONTAINER_REGISTRY_ACCESS_TOKEN : conatiner-registry-accesstoken
 CONTAINER_REGISTRY_USER : conatiner-registry-user
-PACKAGE_REGISTRY_USERNAME : Github-package-registry-user-where-commonisstored
-PACKAGE_REGISTRY_PASSWORD: Github-package-registry-password
+PACKAGE_REGISTRY_USERNAME : Github-repository-owner-name
+PACKAGE_REGISTRY_PASSWORD: Github-token
 NUGET_PLATFORM_URL: Nuget-platform-github-url
 NUGET_SOURCE_URL: Nuget-common-package-source-url
 ```
