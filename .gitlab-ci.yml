@@ -1,0 +1,86 @@
+stages:
+  - build
+  - push
+
+########
+# Usage:
+# * Enable admin user setting in Azure Container Registry, save the token values.
+#   Create three CONTAINER_REGISTRY authentication tokens,
+#   Store the values under Setting -> CI/CD -> Variables
+# * Note: Only maintainer or above will have permission to perform this action
+#
+# * Create CONTAINER_REGISTRY_URL to store the registry url
+#   * Name: CONTAINER_REGISTRY_URL
+#   * Value: Login Server from container registry access keys
+#
+# * Create CONTAINER_REGISTRY_USER to store the registry admin user name
+#   * Name: CONTAINER_REGISTRY_USER
+#   * Value: Username from container registry access keys
+#
+# * Create CONTAINER_REGISTRY_ACCESS_TOKEN to store the registry password
+#   * Name: CONTAINER_REGISTRY_ACCESS_TOKEN
+#   * Value: password from container registry access keys
+#
+########
+
+
+variables:
+  CONTAINER_REGISTRY_URL: ${CONTAINER_REGISTRY_URL}
+  CONTAINER_REGISTRY_USER: ${CONTAINER_REGISTRY_USER}
+  CONTAINER_REGISTRY_ACCESS_TOKEN: ${CONTAINER_REGISTRY_ACCESS_TOKEN}
+  CONTAINER_IMAGE_NAME: ${CI_PROJECT_NAME}
+  GITLAB_PACKAGE_REGISTRY_USERNAME: gitlab-ci-token
+  GITLAB_PACKAGE_REGISTRY_PASSWORD: $CI_JOB_TOKEN
+  NUGET_SOURCE_URL: $NUGET_SOURCE_URL
+  NUGET_PLATFORM_URL: $NUGET_PLATFORM_URL
+
+build-dotnet-seed:
+  stage: build
+  image: mcr.microsoft.com/dotnet/sdk:6.0-bullseye-slim
+  tags:
+    - efr
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == "main"
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_PIPELINE_SOURCE == "web"
+  script:
+    - dotnet build
+
+    - echo "===== Restore dependencies ====="
+    - dotnet restore
+
+    - echo "===== Build ====="
+    - dotnet build --no-restore --configuration Debug
+
+    - echo "===== Test ====="
+    - dotnet test --no-build --verbosity normal --configuration Debug
+
+docker-build-and-push:
+  stage: push
+  tags:
+    - efr
+  image: docker:19.03.12
+    # name: docker:latest
+  variables:
+    DOCKER_HOST: tcp://docker:2376
+    DOCKER_TLS_CERTDIR: "/certs"
+    DOCKER_TLS_VERIFY: 1
+    DOCKER_CERT_PATH: "$DOCKER_TLS_CERTDIR/client"
+    TAG_NAME: latest
+  services:
+    - docker:19.03.13-dind
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == "main"
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  script:
+    - lowerstr=$(echo $CONTAINER_IMAGE_NAME | tr '[:upper:]' '[:lower:]')
+    - echo "===== Login to Container Registry ====="
+    - echo ${CONTAINER_REGISTRY_ACCESS_TOKEN} | docker login ${CONTAINER_REGISTRY_URL} --username ${CONTAINER_REGISTRY_USER} --password-stdin
+
+    - echo "===== Build and push ====="
+    - docker build -t ${CONTAINER_REGISTRY_URL}/${lowerstr}:${TAG_NAME} .
+      --build-arg GITLAB_PACKAGE_REGISTRY_USERNAME=$GITLAB_PACKAGE_REGISTRY_USERNAME
+      --build-arg GITLAB_PACKAGE_REGISTRY_PASSWORD=$GITLAB_PACKAGE_REGISTRY_PASSWORD
+      --build-arg NUGET_SOURCE_URL=$NUGET_SOURCE_URL
+      --build-arg NUGET_PLATFORM_URL=$NUGET_PLATFORM_URL
+    - docker push ${CONTAINER_REGISTRY_URL}/${lowerstr}

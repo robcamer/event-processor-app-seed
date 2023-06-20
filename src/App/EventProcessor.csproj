@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net6.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+		<RootNamespace>EFR.NetworkObservability.EventProcessor</RootNamespace>
+		<IsPublishable>True</IsPublishable>
+        <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="MassTransit" Version="8.0.3" />
+        <PackageReference Include="MassTransit.RabbitMQ" Version="8.0.3" />
+        <PackageReference Include="EntityFramework" Version="6.4.4" />
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0" />
+        <PackageReference Include="System.IO.Compression" Version="4.3.0" />
+		<PackageReference Include="EFR.NetworkObservability.Common" Version="1.0.0" />
+		<PackageReference Include="EFR.NetworkObservability.DataModel" Version="1.0.0" />
+		<PackageReference Include="EFR.NetworkObservability.RabbitMQ" Version="1.0.0" />
+    </ItemGroup>
+
+</Project>

@@ -1,0 +1,69 @@
+version: "3.8"
+
+volumes:
+  prometheus-data: {}
+  grafana-data: {}
+
+services:
+  # .NET
+  eventprocessor:
+    container_name: eventprocessor
+    build:
+      dockerfile: Dockerfile
+      args:
+        - GITHUB_PACKAGE_REGISTRY_USERNAME=$GITHUB_PACKAGE_REGISTRY_USERNAME
+        - GITHUB_PACKAGE_REGISTRY_PASSWORD=$GITHUB_PACKAGE_REGISTRY_PASSWORD
+        - NUGET_SOURCE_URL=$NUGET_SOURCE_URL
+        - NUGET_PLATFORM_URL=$NUGET_PLATFORM_URL
+    environment:
+      - DB_CONNECTION_STRING=$DB_CONNECTION_STRING
+      - RABBITMQ_HOSTNAME=$RABBITMQ_HOSTNAME
+      - RABBITMQ_PORT=$RABBITMQ_PORT
+      - RABBITMQ_USERNAME=$RABBITMQ_USERNAME
+      - RABBITMQ_PASSWORD=$RABBITMQ_PASSWORD
+      - EVENTDATA_PROCESS_QUEUE=$EVENTDATA_PROCESS_QUEUE
+      - FILE_POLLING_INTERVAL=$FILE_POLLING_INTERVAL
+    volumes:
+      - $EVENT_META_DATA_DIRECTORY:/var/data/eventdata
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+  # Third party
+  sqlserver:
+    container_name: sqlserver
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=$SQL_SERVER_PASSWORD
+    ports:
+      - 1433:1433
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "/opt/mssql-tools/bin/sqlcmd",
+          "-Usa",
+          "-P$SQL_SERVER_PASSWORD",
+          "-Q",
+          "select 1"
+        ]
+      interval: 10s
+      retries: 10
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq:3-management
+    environment:
+      - RABBITMQ_DEFAULT_USER=$RABBITMQ_USERNAME
+      - RABBITMQ_DEFAULT_PASS=$RABBITMQ_PASSWORD
+    ports:
+      # AMQP protocol port
+      - "5672:5672"
+      # HTTP management UI
+      - "15672:15672"
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 30s
+      timeout: 30s
+      retries: 3

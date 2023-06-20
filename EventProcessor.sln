@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30114.105
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventProcessor", "src\App\EventProcessor.csproj", "{D21741E1-D11A-4E39-B22D-4BD2F7BEFABE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventProcessor.Tests", "test\App.Tests\EventProcessor.Tests.csproj", "{28F51309-D500-45DA-A181-DC92DCB6FF71}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D21741E1-D11A-4E39-B22D-4BD2F7BEFABE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D21741E1-D11A-4E39-B22D-4BD2F7BEFABE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D21741E1-D11A-4E39-B22D-4BD2F7BEFABE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D21741E1-D11A-4E39-B22D-4BD2F7BEFABE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{28F51309-D500-45DA-A181-DC92DCB6FF71}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{28F51309-D500-45DA-A181-DC92DCB6FF71}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{28F51309-D500-45DA-A181-DC92DCB6FF71}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{28F51309-D500-45DA-A181-DC92DCB6FF71}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
